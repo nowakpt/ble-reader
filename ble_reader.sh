@@ -8,9 +8,9 @@ READ_VALUES=`echo $* | grep -- '--values'`
 
 print_help()
 {
-	echo "Usage: $0 MAC_ADDR [PARAMETERS]"
+	echo "Usage: $0 MAC_ADDR [--values]"
 	echo '  MAC_ADDR      MAC address of a device'
-	echo '  PARAMETERS    additional parameters provided to gatttool'
+	echo '  --values      read values of all readable characteristics'
 }
 
 validate_mac_addr()
