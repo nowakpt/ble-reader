@@ -1,16 +1,20 @@
 #!/bin/bash
 # BLE services and characteristics reader
 
+UUID_DESCRIPTIONS_FILE='./uuid_descriptions.txt'
+
 MAC_ADDR=''
 
 READ_VALUES=`echo $* | grep -- '--values'`
+DECODE_UUIDS=`[ -r "$UUID_DESCRIPTIONS_FILE" ] && echo $* | grep -- '--uuids'`
 
 
 print_help()
 {
-	echo "Usage: $0 MAC_ADDR [--values]"
+	echo "Usage: $0 MAC_ADDR [--values] [--uuids]"
 	echo '  MAC_ADDR      MAC address of a device'
 	echo '  --values      read values of all readable characteristics'
+	echo '  --uuids       decode UUIDs of services and characteristics, according to Bluetooth SIG specification'
 }
 
 validate_mac_addr()
@@ -28,6 +32,13 @@ validate_input()
 		print_help > /dev/stderr
 		exit 1
 	fi
+}
+
+# param: UUID to be decoded
+get_uuid_description()
+{
+	UUID_DESCRIPTION=`cat $UUID_DESCRIPTIONS_FILE | sed s/'#.*$'// | grep "$1" | cut -d':' -f2`
+	[ -n "$UUID_DESCRIPTION" ] && echo " (${UUID_DESCRIPTION})"
 }
 
 read_char_value()
@@ -53,7 +64,8 @@ parse_service_line()
 {
 	SERV_HANDLE=$2
 	SERV_UUID=$9
-	echo "service: $SERV_UUID, handle: $SERV_HANDLE"
+	SERV_UUID_DESCRIPTION=`[ -n "$DECODE_UUIDS" ] && get_uuid_description $SERV_UUID`
+	echo "service: handle ${SERV_HANDLE}, UUID: ${SERV_UUID}${SERV_UUID_DESCRIPTION}"
 }
 
 parse_characteristic_line()
@@ -62,7 +74,8 @@ parse_characteristic_line()
 	CHAR_PROPS=${6}
 	CHAR_VALUE_HANDLE=${11}
 	CHAR_UUID=${14}
-	echo " - char:         $CHAR_UUID"
+	CHAR_UUID_DESCRIPTION=`[ -n "$DECODE_UUIDS" ] && get_uuid_description $CHAR_UUID`
+	echo " - char:         ${CHAR_UUID}${CHAR_UUID_DESCRIPTION}"
 	echo " - properties:   $CHAR_PROPS (`decode_char_properties $CHAR_PROPS`)"
 	echo " - char handle:  $CHAR_HANDLE"
 	[ -n "$READ_VALUES" ] && ((CHAR_PROPS & 0x02)) && echo " - value:        `read_char_value $CHAR_VALUE_HANDLE`"
