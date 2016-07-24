@@ -37,7 +37,7 @@ validate_input()
 # param: UUID to be decoded
 get_uuid_description()
 {
-	UUID_DESCRIPTION=`cat $UUID_DESCRIPTIONS_FILE | sed s/'#.*$'// | grep "$1" | cut -d':' -f2`
+	UUID_DESCRIPTION=`cat $UUID_DESCRIPTIONS_FILE | sed s/'#.*$'// | grep "$1" | cut -d':' -f2-`
 	[ -n "$UUID_DESCRIPTION" ] && echo " (${UUID_DESCRIPTION})"
 }
 
